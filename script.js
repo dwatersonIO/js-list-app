@@ -15,22 +15,17 @@ const LOCAL_STORAGE_LIST_KEY = 'tasks.list'
 const LOCAL_STORAGE_SELECTED_LIST_ID_KEY = 'tasks.selectedListId'
 
 let lists = JSON.parse(localStorage.getItem(LOCAL_STORAGE_LIST_KEY)) || [] // see if saved in LS or else make empty list
-let selectedListId = localStorage.getItem(LOCAL_STORAGE_SELECTED_LIST_ID_KEY) // get ListId of list if something select, otherwise null so nothing selected
-
-
+let selectedListId = localStorage.getItem(LOCAL_STORAGE_SELECTED_LIST_ID_KEY) // get ListId of list if something select, null if no selection
 
 clearCompleteTasksButton.addEventListener('click', e => {
     const selectedList = lists.find(list => list.id === selectedListId)
     selectedList.tasks = selectedList.tasks.filter(task => !task.complete)
     saveAndRender()
-
-
 })
 
 listsContainer.addEventListener('click', e => {
     if (e.target.tagName.toLowerCase() === 'li') {
         selectedListId = e.target.dataset.listId
-        console.log(selectedListId)
         saveAndRender()
     }
   })
@@ -47,7 +42,6 @@ tasksContainer.addEventListener('click', e => {
   })
 
 
-
 deleteListButton.addEventListener('click', e => {
     lists = lists.filter(list => list.id !== selectedListId)
     selectedListId = null
@@ -58,7 +52,7 @@ deleteListButton.addEventListener('click', e => {
 newListForm.addEventListener('submit', e => {
     e.preventDefault()
     const listName = newListInput.value
-    if (listName == null || listName === '') return
+    if (listName == null || listName === '') return //dont allow blank entries
     const list = createList(listName)
     newListInput.value = null
     lists.push(list)
@@ -76,7 +70,7 @@ newListForm.addEventListener('submit', e => {
     saveAndRender()
   })
 
-
+// Cute way of getting a unique id. Get the current time in figures then convert to a string
 function createList(name) {
     return { id: Date.now().toString(), name: name, tasks: []}
 }
@@ -85,17 +79,14 @@ function createTask(name) {
     return { id: Date.now().toString(), name: name, complete: false}
 }
 
-
-
 function saveAndRender() {
     save()
     render()
-
 }
 
 function save() { 
     localStorage.setItem(LOCAL_STORAGE_LIST_KEY, JSON.stringify(lists))
-
+    localStorage.setItem(LOCAL_STORAGE_SELECTED_LIST_ID_KEY, selectedListId)
 }
 
 function render() {
@@ -103,9 +94,9 @@ function render() {
     renderLists()
     const selectedList = lists.find(list => list.id === selectedListId )
     if (selectedListId == null) {
-        listDisplayContainer.style.display = 'none'
+        listDisplayContainer.style.display = 'none'   // makes tasks container disappear if no list selected
     } else {
-        listDisplayContainer.style.display = ''
+        listDisplayContainer.style.display = ''  // this empty string makes the task container display
     }
     listTitleElement.innerText = selectedList.name
     renderTaskCount(selectedList)
@@ -127,20 +118,18 @@ function renderTasks(selectedList) {
     })
   }
 
-
+// Count tasks then use a template literal to display in
 function renderTaskCount(selectedList) {
-    const incompleteTaskCount = selectedList.tasks.filter(task => !task.complete).length
-    const taskString = incompleteTaskCount === 1 ? "task" : "tasks"
+    const incompleteTaskCount = selectedList.tasks.filter(task => !task.complete).length 
+    const taskString = incompleteTaskCount === 1 ? "task" : "tasks"   // adjust for singular or plural depending on num of tasks.
     listCountElement.innerText = `${incompleteTaskCount} ${taskString} remaining`
-
-
 }
 
 function renderLists() {
     lists.forEach(list => {
         const listElement = document.createElement('li')
         listElement.dataset.listId = list.id
-        listElement.classList.add("list-name") // hightlight selected item
+        listElement.classList.add("list-name") 
         listElement.innerText = list.name
         if (list.id === selectedListId) {
             listElement.classList.add('active-list')
